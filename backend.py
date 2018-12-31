@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import filedialog as fd
-import math
+import os
 
 import numpy as np
 from scipy.cluster.vq import kmeans, vq
 from PIL import Image
+import colorsys as cs
 
 np.set_printoptions(threshold=np.nan)
 
@@ -12,51 +13,13 @@ np.set_printoptions(threshold=np.nan)
 def rgb_to_hsv(r, g, b):
     """Converts a rgb to a hsv tuple"""
     r, g, b = r / 255.0, g / 255.0, b / 255.0
-    mx = max(r, g, b)
-    mn = min(r, g, b)
-    df = mx - mn
-    if mx == mn:
-        h = 0
-    elif mx == r:
-        h = (60 * ((g - b) / df) + 360) % 360
-    elif mx == g:
-        h = (60 * ((b - r) / df) + 120) % 360
-    elif mx == b:
-        h = (60 * ((r - g) / df) + 240) % 360
-    if mx == 0:
-        s = 0
-    else:
-        s = (df / mx) * 100
-    v = mx * 100
+    h, s, v = cs.rgb_to_hsv(r, g, b)
     return h, s, v
 
 
 def hsv_to_rgb(h, s, v):
-    h = float(h)
-    s = float(s) / 100
-    v = float(v) / 100
-    h60 = h / 60.0
-    h60f = math.floor(h60)
-    hi = int(h60f) % 6
-    f = h60 - h60f
-    p = v * (1 - s)
-    q = v * (1 - f * s)
-    t = v * (1 - (1 - f) * s)
-    r, g, b = 0, 0, 0
-    if hi == 0:
-        r, g, b = v, t, p
-    elif hi == 1:
-        r, g, b = q, v, p
-    elif hi == 2:
-        r, g, b = p, v, t
-    elif hi == 3:
-        r, g, b = p, q, v
-    elif hi == 4:
-        r, g, b = t, p, v
-    elif hi == 5:
-        r, g, b = v, p, q
-    r, g, b = int(r * 255), int(g * 255), int(b * 255)
-    return int(r), int(g), int(b)
+    r, g, b = cs.hsv_to_rgb(h, s, v)
+    return int(round(r * 255)), int(round(g * 255)), int(round(b * 255))
 
 
 def bit_depth(array, bits=4):
@@ -104,7 +67,7 @@ def sample(array, percent=10):
     """Samples the percent of the image specified, returns bg color"""
     array = array.reshape((-1, 3))
     amount = int(
-        float(array.shape[0]) * float(percent))  # gets the length of the array, then takes the sample fraction
+        float(array.shape[0]) * float(percent / 100))  # gets the length of the array, then takes the sample fraction
     index = np.arange(array.shape[0])  # same as list(range(...)), but more condense
     np.random.shuffle(index)
     subset = array[index[:amount]]
@@ -114,22 +77,21 @@ def sample(array, percent=10):
 
 class Notes:
 
-    def __init__(self, filepath, bg_rgb=None, v_thresh=30, s_thresh=20, bitdepth=6, colorcount=7, palette=None):
+    def __init__(self, file_path, bg_rgb=None, v_thresh=30, s_thresh=20, bitdepth=6, colorcount=7, palette=None):
 
-        self.file_path = filepath
-        self.image_rgb = open_image(filepath)
+        self.file_path = file_path
+        self.image_rgb = open_image(file_path)
 
-        self.image_hsv = self.image_rgb
+        self.image_hsv = self.image_rgb.astype(np.float32)
         for x in range(0, self.image_rgb.shape[0]):
             for y in range(0, self.image_rgb.shape[1]):
                 self.image_hsv[x, y] = rgb_to_hsv(*self.image_rgb[x, y])
-        self.image_rgb = (open_image(filepath))  # reassigns image_rgb, doesnt work without it
-
+        self.image_rgb = (open_image(file_path))  # reassigns image_rgb, doesnt work without it
         self.image_final = Image
         self.bit_depth = bitdepth
         self.color_count = colorcount
 
-        self.bg_color_rgb = self.get_bg_color(self.image_rgb)
+        self.bg_color_rgb = self._get_bg_color(self.image_rgb)
         self.bg_color_hsv = rgb_to_hsv(*self.bg_color_rgb)
 
         if bg_rgb is not None:
@@ -144,44 +106,38 @@ class Notes:
         self.color_palette = palette
         self.sample_set = []
 
-        self.process()
-
-    def foreground(self, sample_size):
+    def _foreground(self, sample_size):
 
         samp = sample_size
-
         _, s_bg, v_bg = self.bg_color_hsv
         s_pix = samp[:, 1]
         v_pix = samp[:, 2]
         s_diff = np.abs(s_bg - s_pix)
         v_diff = np.abs(v_bg - v_pix)
-        return (v_diff >= self.v_threshold) | (s_diff >= self.s_threshold), samp
+        return (v_diff >= self.v_threshold / 100) | (s_diff >= self.s_threshold / 100), samp
 
     def threshold(self):
         """Determines foreground and background colors, and applies color palette"""
-        foreground, samp = self.foreground(sample(self.image_hsv))
-
+        foreground, samp = self._foreground(sample(self.image_hsv))
         colors, _ = kmeans(samp[foreground].astype(np.float32),
-                           self.color_count - 1)  # Thank you fancy SciPy clusters
+                           self.color_count - 1, iter=40)  # Thank you fancy SciPy clusters
 
         # Convert colors back to rgb
         for x in range(colors.shape[0]):
             colors[x] = hsv_to_rgb(*colors[x])
 
         self.color_palette = np.vstack((self.bg_color_rgb, colors)).astype(np.uint8)
-
-        mask, _ = self.foreground(self.image_hsv.reshape((-1, 3)))
+        mask, _ = self._foreground(self.image_hsv.reshape((-1, 3)))
 
         pix = self.image_rgb.reshape((-1, 3))
         mask = mask.flatten()
         labs = np.zeros(pix.shape[0], dtype=np.uint8)
         labs[mask], _ = vq(pix[mask], self.color_palette)  # returns codes and distance, only need codes
         palette = labs.reshape(self.image_hsv.shape[:-1])
-        print(labs, "\n \n \n", palette)
 
         return palette
 
-    def get_bg_color(self, array, percent=None):
+    def _get_bg_color(self, array, percent=None):
         if percent is not None:
             subset = sample(array, percent)
         else:
@@ -194,23 +150,23 @@ class Notes:
     def process(self):
         temp_image = self.threshold()
         pal = self.color_palette.astype(np.float32)
-        # saturate palette
-        for x in range(pal.shape[0]):
+        print(pal)
+        # saturate palette, didn't work so depreciating
+        for x in range(1, pal.shape[0]):
             pal[x] = rgb_to_hsv(*pal[x])
-            hue, sat, _ = pal[x]
-            pal[x] = hue, sat, 100
+            hue, sat, val = pal[x]
+            pal[x] = hue, 1, val
             pal[x] = hsv_to_rgb(*pal[x])
-
+        # pal = 255 * (pal - pal.min()/(pal.max()-pal.min()))
         self.color_palette = pal.astype(np.uint8)
         if self.custom_bg is not None:
             self.color_palette[0] = self.custom_bg
         self.image_final = Image.fromarray(temp_image, 'P')
         self.image_final.putpalette(self.color_palette.flatten())
 
+        return self.image_final
 
-tk.Tk().withdraw()
-file_path = file = fd.askopenfilename(title="Select Image", initialdir="C:/Users/%username%/Documents",
+
+file_path = file = fd.askopenfilename(title="Select Image", initialdir=os.path.expanduser('~') + "/Documents",
                                       filetypes=(("Images", ".jpeg"), ("Images", ".jpg"), ("Images", ".png")))
-f = Notes(file_path, bitdepth=6, v_thresh=30, s_thresh=20, colorcount=8)
-f.image_final.show()
-input()
+f = Notes(file_path, bitdepth=6, v_thresh=25, s_thresh=15, colorcount=8, bg_rgb=(254, 254, 254))
