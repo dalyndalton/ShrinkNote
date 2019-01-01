@@ -1,14 +1,10 @@
-import tkinter as tk
-from tkinter import filedialog as fd
+import colorsys as cs
 import os
+from tkinter import filedialog as fd
 
 import numpy as np
-from scipy.cluster.vq import kmeans, vq
 from PIL import Image
-import colorsys as cs
-
-np.set_printoptions(threshold=np.nan)
-
+from scipy.cluster.vq import kmeans, vq
 
 def rgb_to_hsv(r, g, b):
     """Converts a rgb to a hsv tuple"""
@@ -29,10 +25,12 @@ def bit_depth(array, bits=4):
     return ((array.astype(np.uint8) >> shift) << shift) + half
 
 
-def open_image(file_path):
+def open_image():
     """Function used to test filetype and open image, converts file to RBG"""
-    tk.Tk().withdraw()
+
     while True:
+        file_path = fd.askopenfilename(title="Select Image", initialdir=os.path.expanduser('~') + "/Documents",
+                                       filetypes=(("Images", ".jpeg"), ("Images", ".jpg"), ("Images", ".png")))
         if file_path != "":
             try:
                 img = Image.open(file_path)
@@ -77,16 +75,16 @@ def sample(array, percent=10):
 
 class Notes:
 
-    def __init__(self, file_path, bg_rgb=None, v_thresh=30, s_thresh=20, bitdepth=6, colorcount=7, palette=None):
+    def __init__(self, img_file, bg_rgb=None, v_thresh=30, s_thresh=20, bitdepth=6, colorcount=7, palette=None):
 
-        self.file_path = file_path
-        self.image_rgb = open_image(file_path)
+        self.file_path = img_file
+        self.image_rgb = img_file
 
         self.image_hsv = self.image_rgb.astype(np.float32)
         for x in range(0, self.image_rgb.shape[0]):
             for y in range(0, self.image_rgb.shape[1]):
                 self.image_hsv[x, y] = rgb_to_hsv(*self.image_rgb[x, y])
-        self.image_rgb = (open_image(file_path))  # reassigns image_rgb, doesnt work without it
+        self.image_rgb = img_file  # reassigns image_rgb, doesnt work without it
         self.image_final = Image
         self.bit_depth = bitdepth
         self.color_count = colorcount
@@ -116,7 +114,7 @@ class Notes:
         v_diff = np.abs(v_bg - v_pix)
         return (v_diff >= self.v_threshold / 100) | (s_diff >= self.s_threshold / 100), samp
 
-    def threshold(self):
+    def _threshold(self):
         """Determines foreground and background colors, and applies color palette"""
         foreground, samp = self._foreground(sample(self.image_hsv))
         colors, _ = kmeans(samp[foreground].astype(np.float32),
@@ -148,7 +146,7 @@ class Notes:
         return rgb_packer(unique[counts.argmax()], pack=False)
 
     def process(self):
-        temp_image = self.threshold()
+        temp_image = self._threshold()
         pal = self.color_palette.astype(np.float32)
         print(pal)
         # saturate palette, didn't work so depreciating
@@ -166,7 +164,7 @@ class Notes:
 
         return self.image_final
 
-
-file_path = file = fd.askopenfilename(title="Select Image", initialdir=os.path.expanduser('~') + "/Documents",
-                                      filetypes=(("Images", ".jpeg"), ("Images", ".jpg"), ("Images", ".png")))
-f = Notes(file_path, bitdepth=6, v_thresh=25, s_thresh=15, colorcount=8, bg_rgb=(254, 254, 254))
+#
+# file_path = file = fd.askopenfilename(title="Select Image", initialdir=os.path.expanduser('~') + "/Documents",
+#                                       filetypes=(("Images", ".jpeg"), ("Images", ".jpg"), ("Images", ".png")))
+# f = Notes(file_path, bitdepth=6, v_thresh=25, s_thresh=15, colorcount=8, bg_rgb=(254, 254, 254))
