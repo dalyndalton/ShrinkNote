@@ -1,10 +1,9 @@
 import colorsys as cs
-import os
-from tkinter import filedialog as fd
 
 import numpy as np
 from PIL import Image
 from scipy.cluster.vq import kmeans, vq
+
 
 def rgb_to_hsv(r, g, b):
     """Converts a rgb to a hsv tuple"""
@@ -29,8 +28,6 @@ def open_image():
     """Function used to test filetype and open image, converts file to RBG"""
 
     while True:
-        file_path = fd.askopenfilename(title="Select Image", initialdir=os.path.expanduser('~') + "/Documents",
-                                       filetypes=(("Images", ".jpeg"), ("Images", ".jpg"), ("Images", ".png")))
         if file_path != "":
             try:
                 img = Image.open(file_path)
@@ -148,7 +145,7 @@ class Notes:
     def process(self):
         temp_image = self._threshold()
         pal = self.color_palette.astype(np.float32)
-        print(pal)
+
         # saturate palette, didn't work so depreciating
         for x in range(1, pal.shape[0]):
             pal[x] = rgb_to_hsv(*pal[x])
@@ -164,7 +161,7 @@ class Notes:
 
         return self.image_final
 
-#
-# file_path = file = fd.askopenfilename(title="Select Image", initialdir=os.path.expanduser('~') + "/Documents",
-#                                       filetypes=(("Images", ".jpeg"), ("Images", ".jpg"), ("Images", ".png")))
-# f = Notes(file_path, bitdepth=6, v_thresh=25, s_thresh=15, colorcount=8, bg_rgb=(254, 254, 254))
+
+f = Notes(np.array(Image.open('C:\\Users\\dalyn\Downloads\\test notes.jpg')), bitdepth=6, v_thresh=25, s_thresh=15,
+          colorcount=8, bg_rgb=(254, 254, 254))
+f.process().show()
