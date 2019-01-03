@@ -39,7 +39,7 @@ class NoteShrinkGUI(tk.Frame):
         ################################################################################################################
         # Choose File
         self.choose_file_frame = tk.LabelFrame(self, text="Choose a file")
-        self.choose_file_frame.grid(row=0, column=0, sticky=STICKY)
+        self.choose_file_frame.grid(row=0, column=0)
         self.choose_file_entry = tk.Entry(self.choose_file_frame, textvariable=self.file_path, width=40, )
         self.choose_file_entry.grid(row=0, column=0, sticky=tk.W + tk.E)
         self.choose_file_button = tk.Button(self.choose_file_frame, image=self.img_add_file,
@@ -51,12 +51,12 @@ class NoteShrinkGUI(tk.Frame):
         # Set BG Color
         self.bg_color_set = tk.Checkbutton(self, text="Custom Color", command=self._set_bg_color,
                                            variable=self.bg_color_set_state)
-        self.bg_color_set.grid(row=1, column=0, sticky=tk.W)
+        self.bg_color_set.grid(row=1, column=0)
 
         ################################################################################################################
         # Saturation Threshold Slider & Input
         self.s_frame = tk.Frame(self)
-        self.s_frame.grid(row=2, column=0, sticky=STICKY)
+        self.s_frame.grid(row=2, column=0)
         self.s_thresh_slider = tk.Scale(self.s_frame, variable=self.s_thresh, from_=10, to=30, orient=tk.HORIZONTAL,
                                         label='Saturation Threshold', length=250)
         self.s_thresh_slider.grid(row=0, column=0)
@@ -67,7 +67,7 @@ class NoteShrinkGUI(tk.Frame):
 
         # Value Threshold Slider
         self.v_frame = tk.Frame(self)
-        self.v_frame.grid(row=3, column=0, sticky=STICKY)
+        self.v_frame.grid(row=3, column=0)
         self.v_thresh_slider = tk.Scale(self.v_frame, variable=self.v_thresh, from_=15, to=40, orient=tk.HORIZONTAL,
                                         label="Value Threshold", length=250)
         self.v_thresh_slider.grid(row=0, column=0)
@@ -97,16 +97,14 @@ class NoteShrinkGUI(tk.Frame):
 
         try:
             self.image_orig = Image.open(self.file_path.get())
-            print(type(self.image_orig))
-            temp = self.image_orig.resize((272, 352))
+            temp = self.image_orig.resize((272, 352))  # not actually an error
             temp = ImageTk.PhotoImage(temp)
             self.image_label.config(image=temp)
 
         except AttributeError:
-            self.image_orig = self.file_error
             self.file_path.set("ERROR: Empty File path")
+
         except FileNotFoundError:
-            self.image_orig = self.file_error
             self.file_path.set("ERROR: Can't find file")
 
     @staticmethod
