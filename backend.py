@@ -24,26 +24,6 @@ def bit_depth(array, bits=4):
     return ((array.astype(np.uint8) >> shift) << shift) + half
 
 
-def open_image():
-    """Function used to test filetype and open image, converts file to RBG"""
-
-    while True:
-        if file_path != "":
-            try:
-                img = Image.open(file_path)
-            except IOError:
-                print("ERROR: INVALID FILE TYPE")
-            break
-        else:
-            print("ERROR: NO FILE SELECTED")
-
-    if img.mode != 'RGB':
-        img = img.convert('RGB')
-
-    rgb = np.array(img)
-    return rgb
-
-
 def rgb_packer(array, pack=True):
     """Converts rbg triples to single integers for comparison purposes, pack False unpacks the int"""
     if pack:
@@ -74,14 +54,13 @@ class Notes:
 
     def __init__(self, img_file, bg_rgb=None, v_thresh=30, s_thresh=20, bitdepth=6, colorcount=7, palette=None):
 
-        self.file_path = img_file
-        self.image_rgb = img_file
+        self.image_rgb = np.array(img_file, dtype=np.uint8)
 
         self.image_hsv = self.image_rgb.astype(np.float32)
         for x in range(0, self.image_rgb.shape[0]):
             for y in range(0, self.image_rgb.shape[1]):
                 self.image_hsv[x, y] = rgb_to_hsv(*self.image_rgb[x, y])
-        self.image_rgb = img_file  # reassigns image_rgb, doesnt work without it
+        self.image_rgb = np.array(img_file)  # reassigns image_rgb, doesnt work without it
         self.image_final = Image
         self.bit_depth = bitdepth
         self.color_count = colorcount
@@ -158,10 +137,13 @@ class Notes:
             self.color_palette[0] = self.custom_bg
         self.image_final = Image.fromarray(temp_image, 'P')
         self.image_final.putpalette(self.color_palette.flatten())
-
+        print("done")
         return self.image_final
 
 
-f = Notes(np.array(Image.open('C:\\Users\\dalyn\Downloads\\test notes.jpg')), bitdepth=6, v_thresh=25, s_thresh=15,
+print("running")
+f = Notes(np.array(Image.open("C:\\Users\\dalyn\\Documents\\Scanned Documents\\Image.jpg")), bitdepth=6, v_thresh=25,
+          s_thresh=15,
           colorcount=8, bg_rgb=(254, 254, 254))
-f.process().show()
+
+f.process().save("C:\\Users\\dalyn\\Documents\\testfile.png")
