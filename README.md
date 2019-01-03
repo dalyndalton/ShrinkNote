@@ -9,9 +9,9 @@ Shrink Note Requires the following to be installed:
 - Pillow (PIL)
 the easiest way to install these is to run
 
-'''python
-pip install numpy scipy Pillow
-'''
+```python
+-pip install numpy scipy Pillow
+```
 ## Installation
 Download the projects as a .zip, then run main.py.  For debugging purposes, run backend.py.
 

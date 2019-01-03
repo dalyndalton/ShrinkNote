@@ -21,12 +21,13 @@ class NoteShrinkGUI(tk.Frame):
         temp = Image.open('assets/add_file.png')
         temp = temp.resize((32, 32))
         self.img_add_file = ImageTk.PhotoImage(temp)
+        self.file_error = ImageTk.PhotoImage(Image.open('assets/file_error.png'))
 
         ################################################################################################################
         # Variables
         self.bg_color = None
         self.bg_color_set_state = tk.IntVar()
-        self.image_orig = ImageTk.PhotoImage(Image.open())
+        self.image_orig = None
 
         self.file_path = tk.StringVar()
         self.v_thresh = tk.IntVar()
@@ -39,11 +40,13 @@ class NoteShrinkGUI(tk.Frame):
         # Choose File
         self.choose_file_frame = tk.LabelFrame(self, text="Choose a file")
         self.choose_file_frame.grid(row=0, column=0, sticky=STICKY)
-        self.choose_file_entry = tk.Entry(self.choose_file_frame, textvariable=self.file_path, width=40)
+        self.choose_file_entry = tk.Entry(self.choose_file_frame, textvariable=self.file_path, width=40, )
         self.choose_file_entry.grid(row=0, column=0, sticky=tk.W + tk.E)
         self.choose_file_button = tk.Button(self.choose_file_frame, image=self.img_add_file,
                                             command=self._get_file_name)
         self.choose_file_button.grid(row=0, column=1, sticky=STICKY)
+        self.open_file_button = tk.Button(self.choose_file_frame, command=self._open_file, text='Open')
+        self.open_file_button.grid(row=0, column=2, sticky=STICKY)
         ################################################################################################################
         # Set BG Color
         self.bg_color_set = tk.Checkbutton(self, text="Custom Color", command=self._set_bg_color,
@@ -73,7 +76,11 @@ class NoteShrinkGUI(tk.Frame):
         self.v_thresh_entry.grid(row=0, column=1)
         ################################################################################################################
         # Original Image
-        self.original_photo = tk.Label(self, image=)
+        self.image_label = tk.Label(self, image=self.image_orig)
+        self.image_label.grid(row=0, rowspan=3, column=1)
+
+        # Run Button
+        self.run_button = tk.Button(self)
 
     def _get_file_name(self):
         file_path = fd.askopenfilename(title="Select Image", initialdir=os.path.expanduser('~') + "/Documents",
@@ -85,6 +92,22 @@ class NoteShrinkGUI(tk.Frame):
             self.bg_color, _ = cc.askcolor()
         else:
             self.bg_color = None
+
+    def _open_file(self):
+
+        try:
+            self.image_orig = Image.open(self.file_path.get())
+            print(type(self.image_orig))
+            temp = self.image_orig.resize((272, 352))
+            temp = ImageTk.PhotoImage(temp)
+            self.image_label.config(image=temp)
+
+        except AttributeError:
+            self.image_orig = self.file_error
+            self.file_path.set("ERROR: Empty File path")
+        except FileNotFoundError:
+            self.image_orig = self.file_error
+            self.file_path.set("ERROR: Can't find file")
 
     @staticmethod
     def _validate(action, index, value_if_allowed,
