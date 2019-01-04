@@ -68,6 +68,7 @@ class NoteShrinkGUI(tk.Frame):
         ## Sliders
         self.slider_frame = tk.Frame(self.option_frame)
         self.slider_frame.grid(row=2, column=0)
+
         ### Saturation Threshold Slider & Input
         self.s_thresh_slider = tk.Scale(self.slider_frame, variable=self.s_thresh, from_=10, to=30,
                                         orient=tk.HORIZONTAL,
@@ -102,6 +103,7 @@ class NoteShrinkGUI(tk.Frame):
 
         self.rerun_button = tk.Button(self.button_frame, command=self._rerun, text="Re-run")
         self.save_button = tk.Button(self.button_frame, command=self._save, text="Save")
+
         ################################################################################################################
         # Original Image
         self.orig_image_label = tk.Label(self, image=None)
