@@ -137,13 +137,13 @@ class Notes:
             self.color_palette[0] = self.custom_bg
         self.image_final = Image.fromarray(temp_image, 'P')
         self.image_final.putpalette(self.color_palette.flatten())
-        print("done")
         return self.image_final
 
 
-print("running")
+'''
 f = Notes(np.array(Image.open("C:\\Users\\dalyn\\Documents\\Scanned Documents\\Image.jpg")), bitdepth=6, v_thresh=25,
           s_thresh=15,
           colorcount=8, bg_rgb=(254, 254, 254))
 
 f.process().save("C:\\Users\\dalyn\\Documents\\testfile.png")
+'''
