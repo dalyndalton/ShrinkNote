@@ -3,6 +3,16 @@ ShrinkNote is a simple program used to condense and clarify handwritten
 notes.  The program optimizes pages of notes for computer displays by
 grabbing a set of a few representative colors, and then building the
 remaining image with that palette.
+
+## Download Link
+[Google Drive](https://drive.google.com/file/d/1F2x0Ey-YVUT6FgW2rSDjAtNeW_OE1weK/view?usp=sharing)
+
+Downloads as a windows executable, if you are using MacOS or Linux, download the
+source code as a zip and run
+```bash
+python main.py
+```
+
 ## FAQ's
 - yes it does run that slow, the program hasn't crashed, tkinter just
 shows as not responding.  (If anyone wants to fix this, version 2.0 needs

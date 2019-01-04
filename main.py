@@ -1,4 +1,6 @@
 import os
+
+os.chdir(os.path.expanduser('~') + '\\PycharmProjects\ShrinkNote')
 import tkinter as tk
 from tkinter import colorchooser as cc
 from tkinter import filedialog as fd
@@ -97,12 +99,12 @@ class NoteShrinkGUI(tk.Frame):
 
         ## Run, Rerun, and Save Buttons
         self.button_frame = tk.Frame(self.option_frame)
-        self.button_frame.grid(row=6, column=0, sticky=STICKY)
-        self.run_button = tk.Button(self.button_frame, command=self._run, text="Run")
-        self.run_button.grid(row=0, column=0, sticky=STICKY)
+        self.button_frame.grid(row=6, column=0)
+        self.run_button = tk.Button(self.button_frame, command=self._run, text="Run", width=40, height=2)
+        self.run_button.grid(row=0, column=0)
 
-        self.rerun_button = tk.Button(self.button_frame, command=self._rerun, text="Re-run")
-        self.save_button = tk.Button(self.button_frame, command=self._save, text="Save")
+        self.rerun_button = tk.Button(self.button_frame, command=self._rerun, text="Re-run", width=20, height=2)
+        self.save_button = tk.Button(self.button_frame, command=self._save, text="Save", width=20, height=2)
 
         ################################################################################################################
         # Original Image
