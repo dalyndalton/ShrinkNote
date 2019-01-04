@@ -4,6 +4,10 @@ notes.  The program optimizes pages of notes for computer displays by
 grabbing a set of a few representative colors, and then building the
 remaining image with that palette.
 
+Shrinknote accepts most* image file types, but does not support reading from pdf.  If your copy machine
+saves files as a pdf, i suggest using a conversion service like Cloudconvert to convert them into single image
+files.
+
 ## Download Link
 [Google Drive](https://drive.google.com/file/d/1F2x0Ey-YVUT6FgW2rSDjAtNeW_OE1weK/view?usp=sharing)
 

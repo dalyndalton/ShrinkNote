@@ -1,6 +1,4 @@
 import os
-
-os.chdir(os.path.expanduser('~') + '\\PycharmProjects\ShrinkNote')
 import tkinter as tk
 from tkinter import colorchooser as cc
 from tkinter import filedialog as fd
