@@ -45,5 +45,3 @@ Go ahead, all help is appreciated.
 
 ## Contact
 [Email](mailto:dalyn.dalton.dd@gmail.com)
-
-+1 (435) 691-4210 *calls or text, but just text me I hate talking to people*
